@@ -4,8 +4,10 @@ using PhySMC
 using PhyBullet
 using Accessors
 using Plots
+using Revise
 
 include(joinpath(@__DIR__, "helpers.jl"))
+include(joinpath(@__DIR__, "models.jl"))
 
 function main()
 
@@ -23,17 +25,21 @@ function main()
     # Note: alternative latents will be suggested by the `prior`
     init_state = BulletState(sim, [obj])
     # arguments for `model`
-    gargs = (500, # number of steps (2s)
+    gargs = (120, # number of steps (2s)
              sim,
              init_state)
 
     # execute `model`
-    trace, _ = generate(model, gargs)
+    traces = [generate(model, gargs, choicemap(:gravity => 0)) for _ in 1:4]
+    for (t, _) in traces
+        display(t[:obj_prior=>1=>:start_x_vel])
+        display(t[:obj_prior=>1=>:start_z_vel])
+    end
 
     # visualize the x  position of the objects across time
-    generations = [generate(model, gargs) for i in 1:2]
-    #plts = plot([plot_trace(trace) for (trace, _) in generations]...)
-    #display(plts);
+    
+    plts = plot([plot_trace(trace) for (trace, _) in traces]...)
+    display(plts);
 
     println("press enter to exit the program")
     readline()

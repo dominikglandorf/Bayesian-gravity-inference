@@ -2,8 +2,10 @@ using Gen
 using UnicodePlots
 using Distributions
 using Plots
+using Revise
 
 include(joinpath(@__DIR__, "helpers.jl"))
+include(joinpath(@__DIR__, "models.jl"))
 
 """
     inference_procedure
@@ -49,7 +51,7 @@ function main()
     t = 120 # 2 seconds of observations
     (gargs, obs, truth) = data_generating_procedure(t)
 
-    (traces, aratio) = inference_procedure(gargs, obs, 500)    
+    (traces, aratio) = inference_procedure(gargs, obs, 10)    
 
     display(plot_traces(truth, traces))
 
