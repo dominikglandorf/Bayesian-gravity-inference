@@ -16,9 +16,6 @@ function inference_procedure(gm_args::Tuple,
                              obs::Gen.ChoiceMap,
                              steps::Int = 100)
 
-    # start with an initial guess of physical latents
-    # `ls` is the log score or how well this
-    # initial guess explains the observations
     tr, ls = Gen.generate(model, gm_args, obs)
 
     println("Initial logscore: $(ls)")
@@ -51,7 +48,7 @@ function main()
     t = 120 # 2 seconds of observations
     (gargs, obs, truth) = data_generating_procedure(t)
 
-    (traces, aratio) = inference_procedure(gargs, obs, 10)    
+    (traces, aratio) = inference_procedure(gargs, obs, 100)    
 
     display(plot_traces(truth, traces))
 

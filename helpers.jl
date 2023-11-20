@@ -16,8 +16,8 @@ function scene(
     )
 
     # for debugging
-    client = @pycall pb.connect(pb.GUI)::Int64
-    #client = @pycall pb.connect(pb.DIRECT)::Int64
+    #client = @pycall pb.connect(pb.GUI)::Int64
+    client = @pycall pb.connect(pb.DIRECT)::Int64
 
     pb.resetDebugVisualizerCamera(3, 0, 0, [0.0, 0.0, 0.0]; physicsClientId=client)
     pb.setGravity(0, 0, gravity; physicsClientId = client)
@@ -64,7 +64,7 @@ function scene(
     pb.changeVisualShape(obj_id, -1; textureUniqueId=texture_id)
     pb.changeDynamics(obj_id, -1; mass=1.0, restitution=1., lateralFriction=0., physicsClientId=client)
     print(obj_id)
-    #pb.resetBaseVelocity(obj_id, linearVelocity=obj_velocity, physicsClientId=client)
+    pb.resetBaseVelocity(obj_id, linearVelocity=obj_velocity, physicsClientId=client)
 
     #pb.disconnect(client)
 
@@ -102,7 +102,7 @@ function data_generating_procedure(t::Int64)
     # extract noisy positions
     obs = Gen.choicemap()
     for i = 1:t
-        addr = :kernel => i => :observe
+        addr = :kernel => i => :observations
         _choices = Gen.get_submap(choices, addr)
         Gen.set_submap!(obs, addr, _choices)
     end
@@ -140,7 +140,7 @@ end;
     prev_gravity = choices[:gravity]
     
     # sample new values conditioned on the old ones
-    gravity = {:gravity} ~ trunc_norm(prev_gravity, .25, 0., Inf)
+    gravity = {:gravity} ~ trunc_norm(prev_gravity, 1., -5., 5.)
     
     # the return of this function is not
     # neccessary but could be useful
@@ -175,15 +175,15 @@ Display the observed and final simulated trajectory as well as distributions for
 function plot_traces(truth::Gen.DynamicDSLTrace, traces::Vector{Gen.DynamicDSLTrace})
     t = length(truth[:kernel])
     
-    observed_plt = plot_trace(truth, "True trajectory")
-    simulated_plt = plot_trace(last(traces), "Last trace")
+    observed_plt = plot_trace(truth, "True trajectory (Gravity: $(round(truth[:gravity], digits=2)))")
+    scores = [get_score(t) for t in traces]
+    _, max_index = findmax(scores)
+    simulated_plt = plot_trace(traces[max_index], "Trajectory in best trace")
 
     num_traces = length(traces)
     gravity_logs = [t[:gravity] for t in traces]
-    scores = [get_score(t) for t in traces]
 
-    scores_plt = plot(1:num_traces, scores, title="Scores", xlabel="trace number", ylabel="log score")
-    mass_plts = [Plots.histogram(1:num_traces, gravity_logs[i], title="Mass $(i == 1 ? "Ramp object" : "Table object")", legend=false) for i in 1:2]
-    ratio_plt = Plots.histogram(1:num_traces, mass_logs[1]./mass_logs[2], title="mass ramp object / mass table object", legend=false)
-    plot(observed_plt, simulated_plt, mass_plts..., scores_plt, ratio_plt,  size=(1200, 800))
+    scores_plt = scatter(1:num_traces, scores, title="Scores", xlabel="trace number", ylabel="log score")
+    gravity_plt = Plots.histogram(1:num_traces, gravity_logs, title="Posterior estimate of gravity", legend=false)
+    plot(observed_plt, simulated_plt, gravity_plt, scores_plt,  size=(1200, 800))
 end

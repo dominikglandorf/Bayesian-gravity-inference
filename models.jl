@@ -28,9 +28,8 @@ end
     # sample new mass and restitution for objects
     obj_prior ~ Gen.Map(prior)(template.elements, fill(sim.client, length(template.elements)))
     
-    gravity ~ normal(0., .5)
+    gravity ~ normal(0., .25)
     pb.setGravity(0, 0, gravity; physicsClientId = sim.client)
-    pb.resetBaseVelocity(6, linearVelocity=[.1, 0., .2]; physicsClientId = sim.client)
 
     # simulate `t` timesteps
     states = @trace(Gen.Unfold(kernel)(t, template, sim), :kernel)
