@@ -35,3 +35,21 @@ end
     states = @trace(Gen.Unfold(kernel)(t, template, sim), :kernel)
     return states
 end
+
+@gen function model_switch(t::Int, sim::BulletSim, template::BulletState)
+    # sample new mass and restitution for objects
+    obj_prior ~ Gen.Map(prior)(template.elements, fill(sim.client, length(template.elements)))
+    
+    gravity_present ~ bernoulli(0.5)
+    if gravity_present
+        gravity ~ normal(-0.1, .05)
+    else
+        gravity ~ normal(0., .001)
+    end
+    
+    pb.setGravity(0, 0, gravity; physicsClientId = sim.client)
+
+    # simulate `t` timesteps
+    states = @trace(Gen.Unfold(kernel)(t, template, sim), :kernel)
+    return states
+end

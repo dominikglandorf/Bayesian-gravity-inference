@@ -3,8 +3,10 @@ using UnicodePlots
 using Distributions
 using Plots
 using Printf
+using Revise
 
 include(joinpath(@__DIR__, "helpers.jl"))
+include(joinpath(@__DIR__, "models.jl"))
 
 """
     inference_procedure
@@ -14,14 +16,11 @@ Performs particle filter inference with rejuvenation.
 function inference_procedure(gm_args::Tuple,
                              obs::Vector{Gen.ChoiceMap},
                              particles::Int = 100)
+    
     get_args(t) = (t, gm_args[2:3]...)
-
-    # initialize particle filter
     state = Gen.initialize_particle_filter(model, get_args(0), EmptyChoiceMap(), particles)
 
-    # Then increment through each observation step
     for (t, o) = enumerate(obs)
-        # apply a rejuvenation move to each particle
         step_time = @elapsed begin
             for i=1:particles
                 state.traces[i], _  = mh(state.traces[i], proposal, ())
@@ -42,22 +41,22 @@ end
 
 function main()
 
-    t = 120 # 2 seconds of observations
+    t = 10 # 2 seconds of observations
     (gargs, obs, truth) = data_generating_procedure(t)
 
     choices = get_choices(truth)
     obs = Vector{Gen.ChoiceMap}(undef, t)
     for i = 1:t
-        prefix = :kernel => i => :observe
+        prefix = :kernel => i => :observations
         cm = choicemap()
         set_submap!(cm, prefix, get_submap(choices, prefix))
         obs[i] = cm
     end
 
-    traces = inference_procedure(gargs, obs, 60)
+    traces = inference_procedure(gargs, obs, 100)    
 
     display(plot_traces(truth, traces))
-    
+
     println("press enter to exit the program")
     readline()
     return nothing

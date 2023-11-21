@@ -16,7 +16,7 @@ function inference_procedure(gm_args::Tuple,
                              obs::Gen.ChoiceMap,
                              steps::Int = 100)
 
-    tr, ls = Gen.generate(model, gm_args, obs)
+    tr, ls = Gen.generate(model_switch, gm_args, obs)
 
     println("Initial logscore: $(ls)")
 

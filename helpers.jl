@@ -63,7 +63,8 @@ function scene(
     obj_id = pb.createMultiBody(baseCollisionShapeIndex=obj_col_id, basePosition=obj_position, physicsClientId=client)
     pb.changeVisualShape(obj_id, -1; textureUniqueId=texture_id)
     pb.changeDynamics(obj_id, -1; mass=1.0, restitution=1., lateralFriction=0., physicsClientId=client)
-    print(obj_id)
+    
+    #print(obj_id)
     pb.resetBaseVelocity(obj_id, linearVelocity=obj_velocity, physicsClientId=client)
 
     #pb.disconnect(client)
