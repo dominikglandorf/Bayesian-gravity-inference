@@ -12,7 +12,7 @@ using Accessors
 function scene(
     gravity::Float64=-10.,
     obj_position::NTuple{3, Float64} = (0.0, 0.0, 0.),
-    obj_velocity::NTuple{3, Float64} = (0.15, 0., 0.1)
+    obj_velocity::NTuple{3, Float64} = (1.5, 0., 1.5)
     )
 
     # for debugging
