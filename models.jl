@@ -4,11 +4,11 @@ using PhyBullet
 # Generative Models
 ################################################################################
 
-@gen function prior(element::RigidBody, client::Int)
+@gen function prior(element_state::RigidBodyState)
     start_x_vel ~ normal(0., 1.)
     start_z_vel ~ normal(0., 1.)
-    #pb.resetBaseVelocity(element.object_id, linearVelocity=[start_x_vel, 0., start_z_vel]; physicsClientId = client)
-    return (start_x_vel, start_z_vel)
+    new_state = setproperties(element_state; linear_vel=[start_x_vel, 0, start_z_vel])
+    return new_state
 end
 
 @gen function observe(k::RigidBodyState)
@@ -25,21 +25,21 @@ end
 end
 
 @gen function model(t::Int, sim::BulletSim, template::BulletState)
-    # sample new mass and restitution for objects
-    obj_prior ~ Gen.Map(prior)(template.elements, fill(sim.client, length(template.elements)))
+    obj_prior ~ Gen.Map(prior)(template.kinematics)
+    init_state = setproperties(template; kinematics = obj_prior)
     
     gravity ~ normal(0., .25)
     pb.setGravity(0, 0, gravity; physicsClientId = sim.client)
 
     # simulate `t` timesteps
-    states = @trace(Gen.Unfold(kernel)(t, template, sim), :kernel)
+    states = @trace(Gen.Unfold(kernel)(t, init_state, sim), :kernel)
     return states
 end
 
 @gen function model_switch(t::Int, sim::BulletSim, template::BulletState)
-    # sample new mass and restitution for objects
-    obj_prior ~ Gen.Map(prior)(template.elements, fill(sim.client, length(template.elements)))
-    
+    kinematics ~ Gen.Map(prior)(template.elements, fill(sim.client, length(template.kinematics)))
+    init_state = setproperties(template; kinematics = kinematics)
+
     gravity_present ~ bernoulli(0.5)
     if gravity_present
         gravity ~ normal(-0.1, .05)
@@ -50,6 +50,6 @@ end
     pb.setGravity(0, 0, gravity; physicsClientId = sim.client)
 
     # simulate `t` timesteps
-    states = @trace(Gen.Unfold(kernel)(t, template, sim), :kernel)
+    states = @trace(Gen.Unfold(kernel)(t, init_state, sim), :kernel)
     return states
 end
