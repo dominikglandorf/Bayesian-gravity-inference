@@ -139,14 +139,13 @@ end;
     # get previous values from `tr`
     choices = get_choices(tr)
     prev_gravity = choices[:gravity]
+    gravity ~ trunc_norm(prev_gravity, 1., -5., 5.)
     
-    # sample new values conditioned on the old ones
-    gravity = {:gravity} ~ trunc_norm(prev_gravity, 1., -5., 5.)
+    prev_vel_x = choices[:obj_prior => 1 => :start_x_vel]
+    @trace(trunc_norm(prev_vel_x, 1., -3., 3.), :obj_prior => 1 => :start_x_vel)
+    prev_vel_z = choices[:obj_prior => 1 => :start_z_vel]
+    @trace(trunc_norm(prev_vel_z, 1., -3., 3.), :obj_prior => 1 => :start_z_vel)
     
-    # the return of this function is not
-    # neccessary but could be useful
-    # for debugging.
-    return (gravity)
 end
 
 ################################################################################
@@ -165,7 +164,7 @@ function plot_trace(tr::Gen.Trace, title="Trajectory")
     ys = map(st -> st.kinematics[1].position[3], states)
 
     # return plot
-    plot(xs, ys, title=title, labels="gravity: $(gravity)", xlabel="x", ylabel="y", ylim=(-2,2))
+    plot(xs, ys, title=title, labels="gravity: $(gravity)", xlabel="x", ylabel="y", ylim=(-2.0,2.0), xlim=(-2.5,2.5))
 end
 
 """

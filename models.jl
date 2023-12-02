@@ -28,7 +28,7 @@ end
     obj_prior ~ Gen.Map(prior)(template.kinematics)
     init_state = setproperties(template; kinematics = obj_prior)
     
-    gravity ~ normal(0., .25)
+    gravity ~ normal(-0.1, 0.05)
     pb.setGravity(0, 0, gravity; physicsClientId = sim.client)
 
     # simulate `t` timesteps
@@ -37,12 +37,12 @@ end
 end
 
 @gen function model_switch(t::Int, sim::BulletSim, template::BulletState)
-    kinematics ~ Gen.Map(prior)(template.elements, fill(sim.client, length(template.kinematics)))
-    init_state = setproperties(template; kinematics = kinematics)
+    obj_prior ~ Gen.Map(prior)(template.kinematics)
+    init_state = setproperties(template; kinematics = obj_prior)
 
     gravity_present ~ bernoulli(0.5)
     if gravity_present
-        gravity ~ normal(-0.1, .05)
+        gravity ~ normal(-0.1, .01)
     else
         gravity ~ normal(0., .001)
     end
