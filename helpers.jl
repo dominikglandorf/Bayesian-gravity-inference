@@ -139,12 +139,12 @@ end;
     # get previous values from `tr`
     choices = get_choices(tr)
     prev_gravity = choices[:gravity]
-    gravity ~ trunc_norm(prev_gravity, 1., -5., 5.)
+    gravity ~ trunc_norm(prev_gravity, .01, -5., 5.)
     
     prev_vel_x = choices[:obj_prior => 1 => :start_x_vel]
-    @trace(trunc_norm(prev_vel_x, 1., -3., 3.), :obj_prior => 1 => :start_x_vel)
+    @trace(trunc_norm(prev_vel_x, .01, -3., 3.), :obj_prior => 1 => :start_x_vel)
     prev_vel_z = choices[:obj_prior => 1 => :start_z_vel]
-    @trace(trunc_norm(prev_vel_z, 1., -3., 3.), :obj_prior => 1 => :start_z_vel)
+    @trace(trunc_norm(prev_vel_z, .01, -3., 3.), :obj_prior => 1 => :start_z_vel)
     
 end
 

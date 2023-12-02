@@ -25,7 +25,7 @@ function inference_procedure(gm_args::Tuple,
     traces = Vector{Gen.DynamicDSLTrace}(undef, steps) 
 
     for i = 1:steps
-        if i % 10 == 0
+        if i % 100 == 0
             println("$(i) steps completed")
         end
 
@@ -48,9 +48,10 @@ function main()
     t = 60 # 2 seconds of observations
     (gargs, obs, truth) = data_generating_procedure(t)
 
-    (traces, aratio) = inference_procedure(gargs, obs, 100)    
+    (traces, aratio) = inference_procedure(gargs, obs, 2500)    
 
-    display(plot_traces(truth, traces))
+    
+    display(plot_traces(truth, traces[1000:end]))
 
     println("press enter to exit the program")
     readline()
