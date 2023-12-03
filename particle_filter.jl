@@ -27,15 +27,13 @@ function inference_procedure(gm_args::Tuple,
                 state.traces[i], _  = mh(state.traces[i], proposal, ())
             end
         
-            #Gen.maybe_resample!(state, ess_threshold=particles/2) 
+            Gen.maybe_resample!(state, ess_threshold=particles/2) 
             Gen.particle_filter_step!(state, get_args(t), (UnknownChange(), NoChange(), NoChange()), o)
         end
 
         if t % 10 == 0
             @printf "%s time steps completed (last step was %0.2f seconds)\n" t step_time
             gravities = [t[:gravity] for t in state.traces]
-            @show mean(gravities)
-            @show  std(gravities)
         end
     end
 
@@ -66,4 +64,4 @@ function main()
 end
 
 
-main();
+#main();

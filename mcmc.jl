@@ -4,6 +4,8 @@ using Distributions
 using Plots
 using Revise
 
+ENV["GKSwstype"]="160" # fixes some plotting warnings
+
 include(joinpath(@__DIR__, "helpers.jl"))
 include(joinpath(@__DIR__, "models.jl"))
 
@@ -59,4 +61,4 @@ function main()
 end
 
 
-main();
+#main();
