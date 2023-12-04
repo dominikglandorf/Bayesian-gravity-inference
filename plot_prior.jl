@@ -19,11 +19,10 @@ function get_histogram(model, title)
 
     # visualize the gravity  position of the objects across time
     gravity_logs = [t[:gravity] for (t, _) in traces]
-    Plots.histogram(1:length(traces), gravity_logs, title="Prior: $(title) model", legend=false)
+    Plots.histogram(1:length(traces), gravity_logs, title="Prior: $(title) model", xlabel="Gravity", ylabel="Probability", legend=false)
 end
     
 histograms = [get_histogram(m, title) for (m, title) in zip([model, model_switch], ["flat prior", "switch prior"])]
-display(plot(histograms..., layout=(2, 1), link=:x))
+plt = plot(histograms..., layout=(2, 1), link=:x)
 
-println("press enter to exit the program")
-readline()
+Plots.savefig(plt, "plots/priors.png")

@@ -1,9 +1,9 @@
 using Gen
-using UnicodePlots
 using Distributions
 using Plots
 using Printf
 using Revise
+ENV["GKSwstype"]="160" # fixes some plotting warnings
 
 include(joinpath(@__DIR__, "helpers.jl"))
 include(joinpath(@__DIR__, "models.jl"))
@@ -18,7 +18,7 @@ function inference_procedure(gm_args::Tuple,
                              particles::Int = 100)
     
     get_args(t) = (t, gm_args[2:3]...)
-    state = Gen.initialize_particle_filter(model, get_args(0), EmptyChoiceMap(), particles)
+    state = Gen.initialize_particle_filter(model_switch, get_args(0), EmptyChoiceMap(), particles)
 
     for (t, o) = enumerate(obs)
         

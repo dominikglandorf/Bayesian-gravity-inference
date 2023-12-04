@@ -78,7 +78,7 @@ end
 
 Create a trial (ground truth and observations) with `t` timepoints
 """
-function data_generating_procedure(t::Int64)
+function data_generating_procedure(t::Int64, start_x_vel=.5, start_z_vel=.5, gravity=-.1)
 
     client, obj_id = scene()
 
@@ -98,7 +98,12 @@ function data_generating_procedure(t::Int64)
              init_state)
 
     # execute `model`
-    trace, _ = Gen.generate(model, gargs)
+    #println(start_x_vel)
+    cm = choicemap()
+    cm[:obj_prior => 1 => :start_x_vel] = start_x_vel
+    cm[:obj_prior => 1 => :start_z_vel] = start_z_vel
+    cm[:gravity] = gravity
+    trace, _ = Gen.generate(model, gargs, cm)
     choices = get_choices(trace)
     # extract noisy positions
     obs = Gen.choicemap()
