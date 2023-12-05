@@ -15,10 +15,11 @@ Performs particle filter inference with rejuvenation.
 """
 function inference_procedure(gm_args::Tuple,
                              obs::Vector{Gen.ChoiceMap},
-                             particles::Int = 100)
+                             particles::Int = 100,
+                             gen_model=model_baseline)
     
     get_args(t) = (t, gm_args[2:3]...)
-    state = Gen.initialize_particle_filter(model_switch, get_args(0), EmptyChoiceMap(), particles)
+    state = Gen.initialize_particle_filter(gen_model, get_args(0), EmptyChoiceMap(), particles)
 
     for (t, o) = enumerate(obs)
         
@@ -33,7 +34,6 @@ function inference_procedure(gm_args::Tuple,
 
         if t % 10 == 0
             @printf "%s time steps completed (last step was %0.2f seconds)\n" t step_time
-            gravities = [t[:gravity] for t in state.traces]
         end
     end
 
@@ -42,9 +42,19 @@ end
 
 function main()
 
-    t = 60
-    (gargs, obs, truth) = data_generating_procedure(t)
+    t = 30
+    (gargs, obs, truth) = data_generating_procedure(t, .75, .5, -0.1)
 
+    # plot observation in red and true trajectory in blue
+    truth_states = get_retval(truth)
+    xs, ys = get_trajectory(truth_states)
+    plt = plot(xs, ys, xlabel="x", ylabel="y", ylim=(-0.1, 1.8), xlim=(-0.1,2.5), color="red", label="Observation")
+
+    # plot true trajectory in blue
+    pred_t = 180
+    next_states = Gen.Unfold(kernel)(pred_t, truth_states[t], gargs[2])
+    true_xs, true_ys = get_trajectory(next_states)
+    
     choices = get_choices(truth)
     obs = Vector{Gen.ChoiceMap}(undef, t)
     for i = 1:t
@@ -54,14 +64,24 @@ function main()
         obs[i] = cm
     end
 
-    traces = inference_procedure(gargs, obs, 1000)    
+    traces = inference_procedure(gargs, obs, 100)
+    plt_post = plot_traces(truth, traces)
+    Plots.savefig(plt_post, "plots/posterior.png")
 
-    display(plot_traces(truth, traces))
+    num_samples_vis = 100
+    trace_samples = rand(traces, num_samples_vis)
+    for trace in trace_samples
+        pb.setGravity(0, 0, trace[:gravity]; physicsClientId = gargs[2].client)
+        local states = get_retval(trace)
+        setproperties(truth_states[t].kinematics[1]; linear_vel=states[t].kinematics[1].linear_vel)
+        local next_states = Gen.Unfold(kernel)(pred_t, truth_states[t], gargs[2])
+        local pred_xs, pred_ys = get_trajectory(next_states)
+        #plot!(plt, pred_xs, pred_ys, color="gray", line=(1, 0.5), label="")
+    end
 
-    println("press enter to exit the program")
-    readline()
-    return nothing
+    plot!(plt, true_xs, true_ys, color="blue", label="True trajectory")
+    Plots.savefig(plt, "plots/prediction.png")
 end
 
 
-#main();
+main();

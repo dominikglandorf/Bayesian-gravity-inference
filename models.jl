@@ -24,11 +24,11 @@ end
     return next_state
 end
 
-@gen function model(t::Int, sim::BulletSim, template::BulletState)
+@gen function model_baseline(t::Int, sim::BulletSim, template::BulletState)
     obj_prior ~ Gen.Map(prior)(template.kinematics)
     init_state = setproperties(template; kinematics = obj_prior)
     
-    gravity ~ normal(-0.1, 0.05)
+    gravity ~ normal(-0.1, .25)
     pb.setGravity(0, 0, gravity; physicsClientId = sim.client)
 
     # simulate `t` timesteps
@@ -42,9 +42,9 @@ end
 
     gravity_present ~ bernoulli(0.5)
     if gravity_present
-        gravity ~ normal(-0.1, .01)
+        gravity ~ normal(-0.1, .025)
     else
-        gravity ~ normal(0., .001)
+        gravity ~ normal(0., .01)
     end
     
     pb.setGravity(0, 0, gravity; physicsClientId = sim.client)

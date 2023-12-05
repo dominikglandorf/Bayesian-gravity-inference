@@ -103,7 +103,7 @@ function data_generating_procedure(t::Int64, start_x_vel=.5, start_z_vel=.5, gra
     cm[:obj_prior => 1 => :start_x_vel] = start_x_vel
     cm[:obj_prior => 1 => :start_z_vel] = start_z_vel
     cm[:gravity] = gravity
-    trace, _ = Gen.generate(model, gargs, cm)
+    trace, _ = Gen.generate(model_baseline, gargs, cm)
     choices = get_choices(trace)
     # extract noisy positions
     obs = Gen.choicemap()
@@ -156,6 +156,13 @@ end
 ################################################################################
 # Visuals
 ################################################################################
+
+function get_trajectory(states)
+    # get the x and y positions
+    xs = map(st -> st.kinematics[1].position[1], states)
+    ys = map(st -> st.kinematics[1].position[3], states)
+    return xs, ys
+end
 
 function plot_trace(tr::Gen.Trace, title="Trajectory")
     (t, _, _) = get_args(tr)
