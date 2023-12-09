@@ -5,8 +5,8 @@ using PhyBullet
 ################################################################################
 
 @gen function prior(element_state::RigidBodyState)
-    start_x_vel ~ normal(0., 1.)
-    start_z_vel ~ normal(0., 1.)
+    start_x_vel ~ normal(0., 3.)
+    start_z_vel ~ normal(0., 3.)
     new_state = setproperties(element_state; linear_vel=[start_x_vel, 0, start_z_vel])
     return new_state
 end
@@ -28,7 +28,7 @@ end
     obj_prior ~ Gen.Map(prior)(template.kinematics)
     init_state = setproperties(template; kinematics = obj_prior)
     
-    gravity ~ normal(-0.1, .25)
+    gravity ~ normal(-0.981, 1.)
     pb.setGravity(0, 0, gravity; physicsClientId = sim.client)
 
     # simulate `t` timesteps
@@ -40,9 +40,9 @@ end
     obj_prior ~ Gen.Map(prior)(template.kinematics)
     init_state = setproperties(template; kinematics = obj_prior)
 
-    gravity_present ~ bernoulli(0.5)
+    gravity_present ~ bernoulli(0.75)
     if gravity_present
-        gravity ~ normal(-0.1, .025)
+        gravity ~ normal(-0.981, .25)
     else
         gravity ~ normal(0., .01)
     end

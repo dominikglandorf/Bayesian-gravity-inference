@@ -144,12 +144,12 @@ end;
     # get previous values from `tr`
     choices = get_choices(tr)
     prev_gravity = choices[:gravity]
-    gravity ~ trunc_norm(prev_gravity, .01, -5., 5.)
+    gravity ~ trunc_norm(prev_gravity, .01, -2., 0.)
     
     prev_vel_x = choices[:obj_prior => 1 => :start_x_vel]
-    @trace(trunc_norm(prev_vel_x, .01, -3., 3.), :obj_prior => 1 => :start_x_vel)
+    @trace(trunc_norm(prev_vel_x, .2, -5., 5.), :obj_prior => 1 => :start_x_vel)
     prev_vel_z = choices[:obj_prior => 1 => :start_z_vel]
-    @trace(trunc_norm(prev_vel_z, .01, -3., 3.), :obj_prior => 1 => :start_z_vel)
+    @trace(trunc_norm(prev_vel_z, .2, -5., 5.), :obj_prior => 1 => :start_z_vel)
     
 end
 
@@ -184,12 +184,10 @@ plot_traces(truth::Gen.DynamicDSLTrace, traces::Vector{Gen.DynamicDSLTrace})
 
 Display the observed and final simulated trajectory as well as distributions for latents and the score
 """
-function plot_traces(truth::Gen.DynamicDSLTrace, traces::Vector{Gen.DynamicDSLTrace})
-    t = length(truth[:kernel])
-    
+function plot_traces(truth::Gen.DynamicDSLTrace, traces::Vector{Gen.DynamicDSLTrace})    
     observed_plt = plot_trace(truth, "True trajectory (Gravity: $(round(truth[:gravity], digits=2)))")
     scores = [get_score(t) for t in traces]
-    _, max_index = findmax(scores)
+    _, max_index = findmin(scores)
     simulated_plt = plot_trace(traces[max_index], "Trajectory in best trace")
 
     num_traces = length(traces)

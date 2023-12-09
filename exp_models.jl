@@ -11,9 +11,10 @@ function get_posterior_statistics(gargs, obs, model, num_particles = 100)
     return abs(mean(posterior_gravity)), std(posterior_gravity)
 end
 
-function analyse_inference(t, true_gravity, gen_model, pred_t = 200, num_runs = 10)
+function analyse_inference(t, true_gravity, gen_model, pred_t = 200, num_runs = 3)
     # generate data
-    (gargs, obs, truth) = data_generating_procedure(t, .75, .5, true_gravity)
+    factor = 4
+    (gargs, obs, truth) = data_generating_procedure(t, factor*.75, factor*.5, factor^2*true_gravity)
 
     # do inference
     choices = get_choices(truth)
@@ -29,7 +30,7 @@ function analyse_inference(t, true_gravity, gen_model, pred_t = 200, num_runs = 
     return map(x -> x[1], posterior_stats), map(x -> x[2], posterior_stats)
 end
 
-gravity_conditions = [-.1, -.05, 0.]
+gravity_conditions = [0., -.5, -.981]
 ts = [10, 20, 30]
 models = zip(["baseline", "switch"], [model_baseline, model_switch])
 

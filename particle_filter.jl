@@ -15,7 +15,7 @@ Performs particle filter inference with rejuvenation.
 """
 function inference_procedure(gm_args::Tuple,
                              obs::Vector{Gen.ChoiceMap},
-                             particles::Int = 100,
+                             particles::Int = 50,
                              gen_model=model_baseline)
     
     get_args(t) = (t, gm_args[2:3]...)
@@ -37,13 +37,13 @@ function inference_procedure(gm_args::Tuple,
         end
     end
 
-    return state.traces
+    return Gen.sample_unweighted_traces(state, 5*particles)
 end
 
 function main()
 
-    t = 30
-    (gargs, obs, truth) = data_generating_procedure(t, .75, .5, -0.1)
+    t = 10
+    (gargs, obs, truth) = data_generating_procedure(t, 1.5, 1., -0.981)
 
     # plot observation in red and true trajectory in blue
     truth_states = get_retval(truth)
@@ -51,7 +51,7 @@ function main()
     plt = plot(xs, ys, xlabel="x", ylabel="y", ylim=(-0.1, 1.8), xlim=(-0.1,2.5), color="red", label="Observation")
 
     # plot true trajectory in blue
-    pred_t = 180
+    pred_t = 100 - t
     next_states = Gen.Unfold(kernel)(pred_t, truth_states[t], gargs[2])
     true_xs, true_ys = get_trajectory(next_states)
     
@@ -64,7 +64,7 @@ function main()
         obs[i] = cm
     end
 
-    traces = inference_procedure(gargs, obs, 100)
+    traces = inference_procedure(gargs, obs, 1000, model_switch)
     plt_post = plot_traces(truth, traces)
     Plots.savefig(plt_post, "plots/posterior.png")
 
@@ -76,7 +76,7 @@ function main()
         setproperties(truth_states[t].kinematics[1]; linear_vel=states[t].kinematics[1].linear_vel)
         local next_states = Gen.Unfold(kernel)(pred_t, truth_states[t], gargs[2])
         local pred_xs, pred_ys = get_trajectory(next_states)
-        #plot!(plt, pred_xs, pred_ys, color="gray", line=(1, 0.5), label="")
+        plot!(plt, pred_xs, pred_ys, color="gray", line=(1, 0.5), label="")
     end
 
     plot!(plt, true_xs, true_ys, color="blue", label="True trajectory")
