@@ -43,7 +43,7 @@ end
 function main()
 
     t = 10
-    (gargs, obs, truth) = data_generating_procedure(t, 1.5, 1., -0.981)
+    (gargs, obs, truth) = data_generating_procedure(t, 1.5, 1., -1.)
 
     # plot observation in red and true trajectory in blue
     truth_states = get_retval(truth)
@@ -64,7 +64,7 @@ function main()
         obs[i] = cm
     end
 
-    traces = inference_procedure(gargs, obs, 1000, model_switch)
+    traces = inference_procedure(gargs, obs, 200, model_baseline)
     plt_post = plot_traces(truth, traces)
     Plots.savefig(plt_post, "plots/posterior.png")
 
@@ -84,4 +84,4 @@ function main()
 end
 
 
-main();
+#main();
